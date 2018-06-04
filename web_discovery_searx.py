@@ -51,9 +51,10 @@ seedLength = float(input.count())
 # map 1 calculate the rank for each domain
 # sortBy 1 sort the RDD based on its rank
 output = input.map(lambda id: (id,searx_request(id)))\
-    .flatMap(lambda (id,response): ((find_domain_urls(id, result)) for result in response['results']))\
+    .flatMap(lambda (id,response): (find_domain_urls(id, result) for result in response['results']))\
     .groupByKey()\
     .map(lambda (domain,values): (domain,(list(values),len(list(values))/seedLength)))\
+    .filter(lambda (domain,(values,rank)): rank>0.088)\
     .sortBy(lambda (domain,(values,rank)): -rank)
 
 output.saveAsTextFile('hdfs:///user/maria_dev/data/results')
