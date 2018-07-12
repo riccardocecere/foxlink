@@ -48,11 +48,8 @@ def extract_clean_text_from_page(url):
     try:
         # Tokenization of the words
         words = nltk.word_tokenize(home_page_text)
-        print words
         #Remove all the non words, probabily is not necessary
         #words = [word for word in tokens if word.isalnum()]
-
-
     except:
         return 'ERROR: during tokenization'
 
