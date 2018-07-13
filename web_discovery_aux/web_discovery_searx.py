@@ -4,6 +4,7 @@ from web_discovery_aux import parsing_aux,searx_aux
 #Input path to id file, sparc context, number of pages for searx, boolean to save the file on hdfs
 # path where to save files
 def web_discovery_with_searx(path,sc,num_of_pages,save, path_to_save_sites):
+
     input = sc.textFile(path)
 
     # FlatMap 1 Function that returns all urls from the results of Searx from single id, for every url of an id it creates a line in format (id, url)
@@ -18,6 +19,7 @@ def web_discovery_with_searx(path,sc,num_of_pages,save, path_to_save_sites):
         .filter(lambda (domain, values): len(values['home_page_clean_text']) > 2)
 
     if (save):
-        output.saveAsTextFile(path_to_save_sites)
+        if path_to_save_sites != None and path_to_save_sites != '':
+            output.saveAsTextFile(path_to_save_sites)
 
     return output

@@ -57,7 +57,7 @@ def create_naive_bayes_model(sc,training_path,number_of_features):
 # an rdd containing all the sites to evaluate in the form (domain, {'pages': [(id1,page1),(id2,page2)...], 'home_page_clean_text': ['token1','token2',...]})
 # number of features of the vector
 # boolean for save on hdfs and path where to save
-def evaluate_with_naive_bayes(sc, model, idf,number_of_features,sites,save, path_to_save_evaluation):
+def classify_with_naive_bayes(sc, model, idf, number_of_features, sites, save, path_to_save_evaluation):
 
     # Calculate Tf based on the tokens extracted from the pages
     tf = HashingTF(numFeatures=number_of_features).transform(sites.map(lambda (domain, values): values['home_page_clean_text']))
