@@ -25,7 +25,7 @@ def create_naive_bayes_model(sc,training_path,number_of_features):
     # Split data into labels and features, transform
     # preservesPartitioning is not really required
     # since map without partitioner shouldn't trigger repartitiong
-    labels = training_set.map(lambda (site,label,words):label).zipWithIndex()
+    labels = training_set.map(lambda (site,label,words):label)
 
 
     # Indicates the length of the vector to use, and apply for each element an Hash function
@@ -43,8 +43,9 @@ def create_naive_bayes_model(sc,training_path,number_of_features):
 
 
     tfidf =tfidf.zipWithIndex()
+    labels = labels.zipWithIndex()
 
-    # Combine using zip
+    # Combine using join
     training = labels.map(lambda(label,index):(index,label)).join(tfidf.map(lambda (vector,index):(index,vector)))\
                .map(lambda (index,(label,vector)): LabeledPoint(label,vector))
 

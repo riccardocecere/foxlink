@@ -5,6 +5,12 @@ from web_discovery_aux import parsing_aux,searx_aux
 # path where to save files
 def web_discovery_with_searx(path,sc,num_of_pages,save, path_to_save_sites):
 
+    try:
+        nltk.download('punkt')
+        nltk.download('stopwords')
+    except:
+        print 'error to take nltk packages:'
+
     input = sc.textFile(path)
 
     # FlatMap 1 Function that returns all urls from the results of Searx from single id, for every url of an id it creates a line in format (id, url)
