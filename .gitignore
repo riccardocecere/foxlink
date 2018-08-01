@@ -14,3 +14,5 @@ product-finder/filePackage/__init__\.pyc
 product-finder/filePackage/fileManager\.pyc
 
 product-finder/serverPackage/__init__\.pyc
+
+*.pyc
