@@ -13,7 +13,7 @@ path_to_save_web_discovery_output = 'hdfs:///user/maria_dev/data/searx_discovery
 num_of_searx_result_pages = 1
 save_web_discovery_output = True
 save_classifier_output = False
-number_of_features = int(math.pow(2,12))
+number_of_features = int(math.pow(2,18))
 
 sites = web_discovery_searx.web_discovery_with_searx(id_seed_path, sc, num_of_searx_result_pages, save_web_discovery_output, path_to_save_web_discovery_output)
 (model,idf) = bayes_model.create_naive_bayes_model(sc,training_path,number_of_features)

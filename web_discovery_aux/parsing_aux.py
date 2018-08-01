@@ -1,11 +1,32 @@
+# -*- coding: utf-8 -*-
+
 import re
 import requests
 import pattern.web,nltk
 
+# Add www in case of domain like http://egyp.it and produce output in form http://www.egyp.it
+def add_www_domain(domain):
+
+    if domain == None or domain == '':
+        return 'ERROR_DOMAIN'
+    if '://www.' in domain:
+        return domain
+    domain_with_www = domain.split('//')
+    domain_with_www.insert(1,'//www.')
+    return ''.join(domain_with_www)
+
 
 # Function that takes id and a result in a response to generate  (domain, (page,id))
 
-def find_domain_url(id, result):
+def find_domain_url(url):
+
+        if url==None or url== '':
+            return 'ERROR_DOMAIN'
+
+        return re.findall(r'.*://.*?/', url)[0][:-1]
+
+
+def domain2page_id(id, url):
 
     # Check the id
     if id == None or id == '':
@@ -13,14 +34,16 @@ def find_domain_url(id, result):
 
     try:
         # Use a regex to extract the domain from url
-        domain = re.findall(r'.*://.*?/',result['url'])[0][:-1]
+        domain = find_domain_url(url['url'])
 
         # Use a regex to extract only the 'final' part of url page es: https://amazon.com/vapur ----> vapur
-        page = re.sub('.*://.*?/', '', result['url'])
+        page = re.sub('.*://.*?/', '', url['url'])
         return (domain, (page,id))
 
     except:
+        print 'ERRORE: '+str(url)
         return (id,'ERROR://parsing_problem')
+
 
 
 #function to extract clean text from html pages

@@ -9,7 +9,7 @@ def searx_request(id,pageno):
 
     try:
         pageno += 1
-        response = requests.get("http://172.17.0.3:8888/?format=json&pageno="+str(pageno)+"&engines=yahoo,bing,duckduckgo,qwant,faroo,swisscows&q="+str(id))
+        response = requests.get("http://172.17.0.4:8888/?format=json&pageno="+str(pageno)+"&engines=yahoo,bing,duckduckgo,qwant,faroo,swisscows&q="+str(id))
         response = response.json()
         return response
 
