@@ -4,20 +4,39 @@ import re
 import requests
 import pattern.web,nltk
 
+
+#Remove http*://www in case of domain like http://www.egyp.it and produce output in form egyp.it
+def remove_www_domain(domain):
+
+    if domain == None or domain == '':
+        return 'ERROR_DOMAIN'
+
+    domain_without_www = domain.split('//')
+    domain_without_www = domain_without_www[1]
+
+    if 'www.' in domain_without_www:
+        domain_without_www = domain_without_www[4:]
+
+    return domain_without_www
+
 # Add www in case of domain like http://egyp.it and produce output in form http://www.egyp.it
 def add_www_domain(domain):
 
     if domain == None or domain == '':
         return 'ERROR_DOMAIN'
+
+    # if .www is already present return the domain
     if '://www.' in domain:
         return domain
+
+    # Split the domain on //, (creating an array) the insert //www.
     domain_with_www = domain.split('//')
     domain_with_www.insert(1,'//www.')
+
+    # Join the array to return the domain including www
     return ''.join(domain_with_www)
 
-
-# Function that takes id and a result in a response to generate  (domain, (page,id))
-
+# Function that take an url and extract the domain e.g. wwww.vapur.it/rko ----> www.vapur.it
 def find_domain_url(url):
 
         if url==None or url== '':
@@ -25,7 +44,7 @@ def find_domain_url(url):
 
         return re.findall(r'.*://.*?/', url)[0][:-1]
 
-
+# Function that takes id and a result in a response to generate  (domain, (page,id))
 def domain2page_id(id, url):
 
     # Check the id
