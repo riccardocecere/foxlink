@@ -21,9 +21,11 @@ def compute_shingle_vector(html, shingle_window_size):
     for shingle in shingles_set:
         shingles_hashed_vectors.append(hash_helper.apply(' '.join(shingle)))
 
-    shingles_matrix = np.vstack(shingles_hashed_vectors)
-
-    return tuple(shingles_matrix.min(axis=0))
+    try:
+        shingles_matrix = np.vstack(shingles_hashed_vectors)
+        return tuple(shingles_matrix.min(axis=0))
+    except:
+        return []
 
 
 # returns set of all possible shingles in the given page
@@ -52,9 +54,3 @@ def window(seq, n):
 
 
 
-collection = mongodb_interface.get_collection('https://www.memory4less.com')
-for post in collection.find():
-    body = BeautifulSoup(post['html_raw_text'], 'html.parser')
-    result = compute_shingle_vector(body, 3)
-    mongodb_interface.update_document('https://www.memory4less.com', 'url_page', post['url_page'], 'shingle_vector', str(result))
-    print str(post['url_page'])+'    '+str(result)

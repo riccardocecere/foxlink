@@ -48,7 +48,10 @@ def find_domain_url(url):
         if url==None or url== '':
             return 'ERROR_DOMAIN'
 
-        return re.findall(r'.*://.*?/', url)[0][:-1]
+        try:
+            return re.findall(r'.*://.*?/', url)[0][:-1]
+        except:
+            return str(url)
 
 
 # Function that takes id and a result in a response to generate  (domain, (page,id))

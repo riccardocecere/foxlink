@@ -23,3 +23,7 @@ def update_document(collection, id_name, id, attribute_name, content):
     db = get_db()
     db[collection].update_one({id_name:id}, {'$set': {attribute_name: content}})
     return content
+
+def get_all_collections():
+    db = get_db()
+    return db.list_collection_names()

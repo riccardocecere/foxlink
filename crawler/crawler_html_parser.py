@@ -11,6 +11,8 @@ def extract_relevant_links(html_page, domain):
     # Parse the html body in html
     html_body = BeautifulSoup(html_page, 'html.parser').body
 
+    if html_body == None or html_body =='':
+        return []
     # Find all the links on the page
     all_links = [url['href'] for url in html_body.find_all("a") if 'href' in url.attrs]
 

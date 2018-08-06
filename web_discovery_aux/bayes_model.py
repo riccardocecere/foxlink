@@ -78,9 +78,8 @@ def classify_with_naive_bayes(sc, model, idf, number_of_features, sites, save, p
 
     # Join predictions with domains
     result = domains.map(lambda ((domain,values),index): (index, (domain,values))).join(preds.map(lambda (pred, index): (index, pred)))
-    result = result.map(lambda(index, ((domain,values),prediction)):(domain,{'pages':values['pages'], 'prediction':prediction}))
-
-    #ToDo inserire filtro per far passare solo i positivi
+    result = result.map(lambda(index, ((domain,values),prediction)):(domain,{'pages':values['pages'], 'prediction':prediction}))\
+            .filter(lambda (domain,values): values['prediction'] == 1.0)
 
     if(save):
         if path_to_save_evaluation!=None and path_to_save_evaluation!='':

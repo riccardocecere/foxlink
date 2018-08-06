@@ -29,31 +29,39 @@ class ProductFinderSpider(CrawlSpider):
         mongodb_interface.put(domain,content)
 
 
-process = CrawlerProcess({
-    'USER_AGENT': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0'
-})
 
 # Function for starting the crawler, it takes several parameters for the settings
 def start_crawling(start_urls, allowed_domains,depth_limit,download_delay, closespider_pagecount, autothrottle_enable, autothrottle_target_concurrency):
 
-    try:
-        #Check if the donwload delay is at a minimum of 0.4 sec
-        if download_delay == None or download_delay<0.4:
-            download_delay = 0.4
+    print '------------------------------------'
+    print '--------------URLS---------------'
+    print start_urls
+    print allowed_domains
+    #Check if the donwload delay is at a minimum of 0.4 sec
+    if download_delay == None or download_delay<0.4:
+        download_delay = 0.4
 
-        custom_settings = get_project_settings()
-        custom_settings.update({
-            'DEPTH_LIMIT': str(depth_limit),
-            'DOWNLOAD_DELAY': str(download_delay),
-            'CLOSESPIDER_PAGECOUNT': str(closespider_pagecount),
-            'AUTOTHROTTLE_ENABLED': str(autothrottle_enable),
-            'AUTOTHROTTLE_TARGET_CONCURRENCY': str(autothrottle_target_concurrency)
-        })
-        process = CrawlerProcess(custom_settings)
-        process.crawl(ProductFinderSpider, start_urls=start_urls,allowed_domains=allowed_domains)
-        process.start()
-        return 'crawled.'
+    custom_settings = get_project_settings()
+    custom_settings.update({
+        'DEPTH_LIMIT': str(depth_limit),
+        'DOWNLOAD_DELAY': str(download_delay),
+        'CLOSESPIDER_PAGECOUNT': str(closespider_pagecount),
+        'AUTOTHROTTLE_ENABLED': str(autothrottle_enable),
+        'AUTOTHROTTLE_TARGET_CONCURRENCY': str(autothrottle_target_concurrency),
+        'CONCURRENT_REQUESTS': str(150),
+        'REACTOR_THREADPOOL_MAXSIZE': str(20),
+        'LOG_LEVEL' : 'INFO',
+        'COOKIES_ENABLED':'False',
+        'RETRY_ENABLE':'False',
+        'DOWNLOAD_TIMEOUT':str(15),
+        'REDIRECT_ENABLED':'False',
+        'AJAXCRAWL_ENABLED':'True',
+        'ROBOTSTXT_OBEY':'True',
+        'USER_AGENT': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0'
+    })
+    process = CrawlerProcess(custom_settings)
+    process.crawl(ProductFinderSpider, start_urls=start_urls,allowed_domains=allowed_domains)
+    process.start()
+    return 'crawled'
 
-    except:
-        return 'not cralwed.'
 
