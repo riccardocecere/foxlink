@@ -25,13 +25,18 @@ def structural_clustering(collection, threshold=20):
 
     # build the sample dictionary from the relative mongodb collection data
     for post in collection.find():
-        sample[post['url_page']] = post['shingle_vector']
+        try:
+            sample[post['url_page']] = post['shingle_vector']
+        except:
+            continue
 
     #   *FIRST PASS*
+    # sample.items dictionary ---> [(key1,value1), ...]
     for page in sample.items():
 
         url, shingle_vector = page
-
+        if shingle_vector == '[]' or shingle_vector == None:
+            continue
         # update inverted index v -> pages for third pass
         if shingle_vector in inverted_index:
             inverted_index[shingle_vector].append(url)
@@ -174,8 +179,3 @@ def delete_by_threshold(hash_table, threshold):
 # Function that transform a tuple in a vector
 def to_vec(tuple):
     return [x for x in tuple]
-
-
-#Starting point of the program
-collection = mongodb_interface.get_collection('http://www.unieuro.it')
-structural_clustering(collection)

@@ -1,7 +1,8 @@
 from pyspark import SparkContext, SparkConf
 from web_discovery_aux import web_discovery_searx, bayes_model
 from crawler import crawler_product_finder
-from shingler import product_finder_shingler
+from shingler import product_finder_shingler, structural_clustering, product_finder_structural_clustering
+from mongodb_middleware import mongodb_interface
 import math
 
 
@@ -29,8 +30,8 @@ depth_limit = 7
 download_delay = 0.4
 closesspider_pagecount = 50
 autothrottle_enable = True
-autothrottle_target_concurrency = 3
-save_product_site_crawled_output = True
+autothrottle_target_concurrency = 10
+save_product_site_crawled_output = False
 path_to_save_crawler_output = 'hdfs:///user/maria_dev/data/product_sites_crawled'
 #------------------------------------------------------------------------------------
 
@@ -39,8 +40,15 @@ path_to_save_crawler_output = 'hdfs:///user/maria_dev/data/product_sites_crawled
 #SHINGLE CONFIG
 #----------------
 shingle_window = 3
-save_product_site_shingled_output = True
+save_product_site_shingled_output = False
 path_to_save_shingled_output = 'hdfs:///user/maria_dev/data/product_sites_shingled'
+#------------------------------------------------------------------------------------
+
+#----------------
+#STRUCTURAL_CLUSTERING CONFIG
+#----------------
+save_structural_clustering_output = True
+path_to_save_structural_clustering_output = 'hdfs:///user/maria_dev/data/structural_clustering'
 #------------------------------------------------------------------------------------
 
 sites = web_discovery_searx.web_discovery_with_searx(id_seed_path, sc, num_of_searx_result_pages, save_web_discovery_output, path_to_save_web_discovery_output)
@@ -52,7 +60,13 @@ sc.stop()
 product_sites_crawled = crawler_product_finder.intrasite_crawling_iterative(product_sites,depth_limit,download_delay,closesspider_pagecount,autothrottle_enable,autothrottle_target_concurrency,save_product_site_crawled_output,path_to_save_crawler_output)
 product_sites_shingled = product_finder_shingler.generate_shingles(sc,shingle_window,save_product_site_shingled_output,path_to_save_shingled_output)
 
+conf = SparkConf().setAppName('product_finder')
+sc = SparkContext(conf=conf)
 
+clusters = product_finder_structural_clustering.all_sites_structural_clustering(sc, sc.parallelize(mongodb_interface.get_all_collections()),save_structural_clustering_output,path_to_save_structural_clustering_output)
+
+
+sc.stop()
 
 
 
