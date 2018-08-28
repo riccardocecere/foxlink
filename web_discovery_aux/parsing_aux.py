@@ -9,6 +9,27 @@ import pattern.web,nltk
 def find_domain_in_url(domain,url):
     return bool(re.match('.*://[www.]*'+domain, url))
 
+#Function to veryfy is the link brings to a page of the same site
+def in_site_links(domain,url):
+
+    return find_domain_in_url(domain,url) or bool(re.match('^/.*', url)) or  bool(re.match('^\./.*', url))
+
+#Normalize the link
+def normalize_link(url,domain):
+    if bool(re.match('^/{2}.*', url)):
+        if bool(re.match('^https', domain)):
+            return str('https:')+str(url)
+        else:
+            return str('http:') + str(url)
+
+    if bool(re.match('^/.*', url)):
+        return str(domain)+str(url)
+
+    if bool(re.match('^\./.*', url)):
+        return str(domain)+str(url)[1:]
+
+    return url
+
 #Remove http*://www in case of domain like http://www.egyp.it and produce output in form egyp.it
 def remove_www_domain(domain):
 

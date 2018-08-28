@@ -7,6 +7,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from web_discovery_aux import parsing_aux
 from bs4 import BeautifulSoup
+from collections import defaultdict
 
 
 class ProductFinderSpider(CrawlSpider):
@@ -17,16 +18,17 @@ class ProductFinderSpider(CrawlSpider):
         Rule(LinkExtractor(), callback='parse_item', follow=True),
     )
 
+
     def parse_item(self, response):
         #item_name = response.url.split("/")[-2] + '.html'
         domain = parsing_aux.find_domain_url(response.url)
-        relevant_links = crawler_html_parser.extract_relevant_links(response.body, parsing_aux.remove_www_domain(domain))
+        full_domain = parsing_aux.add_www_domain(domain)
+        relevant_links = crawler_html_parser.extract_relevant_links(response.body, parsing_aux.remove_www_domain(domain),full_domain)
         content = {'url_page': str(response.url),
                    'html_raw_text': str(BeautifulSoup(response.body,'html.parser').body),
                    'page_relevant_links': str(list(set(relevant_links)))}
         content = json.dumps(content)
-        domain = parsing_aux.add_www_domain(domain)
-        mongodb_interface.put(domain,content)
+        mongodb_interface.put(full_domain,content)
 
 
 
@@ -38,8 +40,8 @@ def start_crawling(start_urls, allowed_domains,depth_limit,download_delay, close
     print start_urls
     print allowed_domains
     #Check if the donwload delay is at a minimum of 0.4 sec
-    if download_delay == None or download_delay<0.4:
-        download_delay = 0.4
+    if download_delay == None or download_delay<0.3:
+        download_delay = 0.3
 
     custom_settings = get_project_settings()
     custom_settings.update({
@@ -48,7 +50,7 @@ def start_crawling(start_urls, allowed_domains,depth_limit,download_delay, close
         'CLOSESPIDER_PAGECOUNT': str(closespider_pagecount),
         'AUTOTHROTTLE_ENABLED': str(autothrottle_enable),
         'AUTOTHROTTLE_TARGET_CONCURRENCY': str(autothrottle_target_concurrency),
-        'CONCURRENT_REQUESTS': str(150),
+        'CONCURRENT_REQUESTS': str(200),
         'REACTOR_THREADPOOL_MAXSIZE': str(20),
         'LOG_LEVEL' : 'INFO',
         'COOKIES_ENABLED':'False',
@@ -57,6 +59,7 @@ def start_crawling(start_urls, allowed_domains,depth_limit,download_delay, close
         'REDIRECT_ENABLED':'False',
         'AJAXCRAWL_ENABLED':'True',
         'ROBOTSTXT_OBEY':'True',
+        'SCHEDULER': 'domain_scheduler.DomainScheduler',
         'USER_AGENT': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0'
     })
     process = CrawlerProcess(custom_settings)

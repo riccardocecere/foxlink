@@ -98,8 +98,7 @@ def structural_clustering(collection, threshold=20):
     for shingle_vector, cluster in clusters.items():
         result.append((to_vec(shingle_vector), cluster))
 
-    result = sorted(result, key=lambda x: len(x[1]), reverse=True)
-    print result
+    #result = sorted(result, key=lambda x: len(x[1]), reverse=True)
     return result
 
 
