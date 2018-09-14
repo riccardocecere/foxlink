@@ -37,7 +37,7 @@ def label_cluster(clusters, clusters_deep_average):
         try:
             cluster_result = {}
             clusters = list(clusters)
-            if float(clusters[0][1]) < 5.4:
+            if float(clusters[0][1]) < 2.0:
                 cluster_result['label'] = 'indexes'
             else:
                 cluster_result['label'] = 'products'
@@ -76,6 +76,7 @@ def calculate_cluster_metrics(sc,clusters,save,path_to_save):
     clusters_labeled = output.groupByKey()\
         .map(lambda (domain,clusters2average):(domain, {'clusters2average':clusters2average,'total_elements':sum(cluster_elements for _,_,cluster_elements in clusters2average)}))\
         .map(lambda (domain,clusters2average): (domain, {'clusters2average':normalize_clusters_average(clusters2average['clusters2average'],clusters2average['total_elements'])}))\
+        .map(lambda (domain,clusters2average): (domain, {'clusters2average':[x for x in clusters2average['clusters2average'] if float(x[1])>1.5]}))\
         .map(lambda (domain,clusters2average):(domain, {'clusters_deep_average':calculate_clusters_deep_average(clusters2average['clusters2average']),'clusters':clusters2average['clusters2average']}))\
         .map(lambda (domain,clusters_value):(domain,label_cluster(clusters_value['clusters'], clusters_value['clusters_deep_average'])))\
         .filter(lambda (domain,clusters_value):clusters_value != None)
