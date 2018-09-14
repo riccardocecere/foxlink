@@ -26,7 +26,9 @@ class ProductFinderSpider(CrawlSpider):
         relevant_links = crawler_html_parser.extract_relevant_links(response.body, parsing_aux.remove_www_domain(domain),full_domain)
         content = {'url_page': str(response.url),
                    'html_raw_text': str(BeautifulSoup(response.body,'html.parser').body),
-                   'page_relevant_links': str(list(set(relevant_links)))}
+                   'page_relevant_links': str(list(set(relevant_links))),
+                   'depth_level': str(response.meta['depth']),
+                   'referring_url': str(response.request.headers.get('Referer',None))}
         content = json.dumps(content)
         mongodb_interface.put(full_domain,content)
 

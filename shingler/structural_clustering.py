@@ -26,7 +26,7 @@ def structural_clustering(collection, threshold=20):
     # build the sample dictionary from the relative mongodb collection data
     for post in collection.find():
         try:
-            sample[post['url_page']] = post['shingle_vector']
+            sample[post['url_page']] = (post['shingle_vector'], post['depth_level'])
         except:
             continue
 
@@ -34,14 +34,17 @@ def structural_clustering(collection, threshold=20):
     # sample.items dictionary ---> [(key1,value1), ...]
     for page in sample.items():
 
-        url, shingle_vector = page
+        url, shingle_vector2depth_level = page
+        shingle_vector = shingle_vector2depth_level[0]
+        depth_level = shingle_vector2depth_level[1]
+
         if shingle_vector == '[]' or shingle_vector == None:
             continue
         # update inverted index v -> pages for third pass
         if shingle_vector in inverted_index:
-            inverted_index[shingle_vector].append(url)
+            inverted_index[shingle_vector].append((url,depth_level))
         else:
-            inverted_index[shingle_vector] = [url]
+            inverted_index[shingle_vector] = [(url,depth_level)]
 
         # shingle_vector variable is an 8/8 shingle vector
         # if already processed
@@ -85,13 +88,13 @@ def structural_clustering(collection, threshold=20):
                 not_assigned_pages.append((shingle_vector, urls))
                 for u in urls:
                     not_clustered += 1
-                    del sample[u]
+                    del sample[u[0]]
 
-    print("Vertex clusters: " + str(len(clusters)) + ' clusters.')
+    #print("Vertex clusters: " + str(len(clusters)) + ' clusters.')
 
-    print("Not classified: " + str(not_clustered)) + ' urls.'
+    #print("Not classified: " + str(not_clustered)) + ' urls.'
 
-    print('Classified %.3f' % (100 - ((not_clustered * 100)/old_sample_size))) + '%.'
+    #print('Classified %.3f' % (100 - ((not_clustered * 100)/old_sample_size))) + '%.'
 
     # build algorithm result with a short iteration
     result = []

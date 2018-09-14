@@ -6,6 +6,7 @@ import nltk
 # path where to save files
 def web_discovery_with_searx(path,sc,num_of_pages,save, path_to_save_sites):
 
+    # Try to download packages for NLTK
     try:
         nltk.download('punkt')
         nltk.download('stopwords')
@@ -21,7 +22,7 @@ def web_discovery_with_searx(path,sc,num_of_pages,save, path_to_save_sites):
     output = input.flatMap(lambda id: ((id, searx_aux.searx_request(id, pageno)) for pageno in range(num_of_pages))) \
         .flatMap(lambda (id, response): (parsing_aux.domain2page_id(id, page) for page in response['results'])) \
         .groupByKey() \
-        .map(lambda (domain, values): (domain, {'pages': list(values), 'home_page_clean_text': parsing_aux.extract_clean_text_from_page(domain)})) \
+        .map(lambda (domain, values): (domain, {'pages': list(values), 'home_page_clean_text': parsing_aux.extract_clean_text_from_home_page(domain)})) \
         .filter(lambda (domain, values): isinstance(values['home_page_clean_text'], list)) \
         .filter(lambda (domain, values): len(values['home_page_clean_text']) > 2)
 

@@ -21,6 +21,8 @@ def calculate_shingles_on_domain(domain,window):
 
 def generate_shingles(sc,shingle_window,save_rdd, output_path):
     product_sites_crawled = mongodb_interface.get_all_collections()
+    #Todo rimuovere assolutamente
+    product_sites_crawled = [x for x in product_sites_crawled if x not in ['http://www.camerajungle.co.uk','https://www.beachcamera.com','https://www.rockandsould.com']]
     if product_sites_crawled != None:
         for site in product_sites_crawled:
             calculate_shingles_on_domain(str(site),shingle_window)

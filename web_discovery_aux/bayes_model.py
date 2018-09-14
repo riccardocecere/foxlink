@@ -18,13 +18,12 @@ def create_naive_bayes_model(sc,training_path,number_of_features):
 
 
     training_set = input.map(lambda line: line.split('\t')) \
-    .map(lambda (site,label):(site,label,parsing_aux.extract_clean_text_from_page(site)))\
+    .map(lambda (site,label):(site,label,parsing_aux.extract_clean_text_from_home_page(site)))\
         .filter(lambda (site,label,words):isinstance(words, list))\
         .filter(lambda (site,label,words):len(words)>2)
 
     # Split data into labels and features, transform
-    # preservesPartitioning is not really required
-    # since map without partitioner shouldn't trigger repartitiong
+
     labels = training_set.map(lambda (site,label,words):label)
 
 
@@ -54,11 +53,12 @@ def create_naive_bayes_model(sc,training_path,number_of_features):
 
     return (model,idf)
 
-# input spark context, naive model already trained, idf trained with the training set,
+# input spark context, naive model already trained, idf trained with the training set, boolean to save the file and the path, filters is an array of float such to filter out
+# the unwanted results es. [1.0] for product site [1.0, 2.0] for product page and index page
 # an rdd containing all the sites to evaluate in the form (domain, {'pages': [(id1,page1),(id2,page2)...], 'home_page_clean_text': ['token1','token2',...]})
 # number of features of the vector
 # boolean for save on hdfs and path where to save
-def classify_with_naive_bayes(sc, model, idf, number_of_features, sites, save, path_to_save_evaluation):
+def classify_with_naive_bayes(sc, model, idf, number_of_features, sites, save, path_to_save_evaluation, filters):
 
     # Calculate Tf based on the tokens extracted from the pages
     tf = HashingTF(numFeatures=number_of_features).transform(sites.map(lambda (domain, values): values['home_page_clean_text']))
@@ -72,14 +72,14 @@ def classify_with_naive_bayes(sc, model, idf, number_of_features, sites, save, p
     #Zip with index necessary for the join
     preds = preds.zipWithIndex()
 
-    # I creates a new rdd for bind the correct domain and values to each prediction
+    # I creates a new rdd for binding the correct domain and values to each prediction
     domains = sites.map(lambda (domain,values): (domain, {'pages': values['pages']}))
     domains = domains.zipWithIndex()
 
     # Join predictions with domains
     result = domains.map(lambda ((domain,values),index): (index, (domain,values))).join(preds.map(lambda (pred, index): (index, pred)))
     result = result.map(lambda(index, ((domain,values),prediction)):(domain,{'pages':values['pages'], 'prediction':prediction}))\
-            .filter(lambda (domain,values): values['prediction'] == 1.0)
+            .filter(lambda (domain,values): (float(values['prediction']) in filters))
 
     if(save):
         if path_to_save_evaluation!=None and path_to_save_evaluation!='':
