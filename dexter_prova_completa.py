@@ -56,7 +56,7 @@ path_to_save_shingled_output = 'hdfs:///user/maria_dev/data/product_sites_shingl
 #----------------
 #STRUCTURAL_CLUSTERING CONFIG
 #----------------
-save_structural_clustering_output = True
+save_structural_clustering_output = False
 path_to_save_structural_clustering_output = 'hdfs:///user/maria_dev/data/structural_clustering'
 
 training_path_product_page = 'hdfs:///user/maria_dev/data/test_training_set_page_product_cameras.txt'
@@ -112,7 +112,7 @@ training_path_cluster_classifier = 'hdfs:///user/maria_dev/data/training_set_cam
 prepare_training_input_cluster_page = False
 ouput_train_cluster_page_path_parquet = 'hdfs:///user/maria_dev/data/classifier/train_camera_cluster_page.parquet'
 output_eval_cluster_page_path_parquet = 'hdfs:///user/maria_dev/data/classifier/eval_camera_cluster_page.parquet'
-save_cluster_page_evaluation = True
+save_cluster_page_evaluation = False
 path_to_save_cluster_page = 'hdfs:///user/maria_dev/data/cluster_page_classified'
 
 #------------------------------------------------------------------------------------
@@ -124,7 +124,7 @@ training_path_labelled_cluster = 'hdfs:///user/maria_dev/data/training_set_label
 prepare_training_input_labelled_cluster = False
 ouput_train_labbeled_cluster_path_parquet = 'hdfs:///user/maria_dev/data/classifier/train_camera_labelled_cluster.parquet'
 output_eval_labelled_cluster_path_parquet = 'hdfs:///user/maria_dev/data/classifier/eval_camera_labelled_cluster.parquet'
-save_labelled_cluster_evaluation = True
+save_labelled_cluster_evaluation = False
 path_to_save_labelled_cluster = 'hdfs:///user/maria_dev/data/labelled_cluster_classified'
 
 #------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ path_to_save_labelled_cluster = 'hdfs:///user/maria_dev/data/labelled_cluster_cl
 #----------------
 #XPATH CONFIG
 #----------------
-save_xpath = True
+save_xpath = False
 path_to_save_xpath = 'hdfs:///user/maria_dev/data/xpath_output'
 #------------------------------------------------------------------------------------
 
@@ -174,6 +174,7 @@ referring_url_metrics = referring_url_metrics.calculate_referring_url_metrics(sc
 #referring_url_metrics = referring_url_metrics.filter(lambda (domain,clusters):domain=='https://www.digitalcamerawarehouse.com.au')
 category_clusters = naive_bayes_classifier.keywords_naive_bayes_classifier(sc,training_path_cluster_classifier,referring_url_metrics,prepare_training_input_cluster_page,ouput_train_cluster_page_path_parquet,output_eval_cluster_page_path_parquet,save_cluster_page_evaluation,path_to_save_cluster_page,'cluster_pages')
 xpaths = xpath_patterns.xpath_sequencies(sc,category_clusters,save_xpath,path_to_save_xpath)
+generalized_xpath = xpath_patterns.generalize_xpath(sc,xpaths,True,'hdfs:///user/maria_dev/data/generalized_xpath_output')
 
 #labelled_clusters = naive_bayes_classifier.keywords_naive_bayes_classifier(sc, training_path_labelled_cluster,clusters,prepare_training_input_labelled_cluster,ouput_train_labbeled_cluster_path_parquet,output_eval_labelled_cluster_path_parquet,save_labelled_cluster_evaluation,path_to_save_labelled_cluster,'cluster_labels')
 
