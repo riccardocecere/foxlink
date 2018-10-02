@@ -22,15 +22,16 @@ class ProductFinderSpider(CrawlSpider):
     def parse_item(self, response):
         #item_name = response.url.split("/")[-2] + '.html'
         domain = parsing_aux.find_domain_url(response.url)
-        full_domain = parsing_aux.add_www_domain(domain)
-        relevant_links = crawler_html_parser.extract_relevant_links(response.body, parsing_aux.remove_www_domain(domain),full_domain)
-        content = {'url_page': str(response.url),
-                   'html_raw_text': str(BeautifulSoup(response.body,'html.parser').body),
-                   'page_relevant_links': str(list(set(relevant_links))),
-                   'depth_level': str(response.meta['depth']),
-                   'referring_url': str(response.request.headers.get('Referer',None))}
-        content = json.dumps(content)
-        mongodb_interface.put(full_domain,content)
+        if domain in self.start_urls:
+            full_domain = parsing_aux.add_www_domain(domain)
+            relevant_links = crawler_html_parser.extract_relevant_links(response.body, parsing_aux.remove_www_domain(domain),full_domain)
+            content = {'url_page': str(response.url),
+                       'html_raw_text': str(BeautifulSoup(response.body,'html.parser').body),
+                       'page_relevant_links': str(list(set(relevant_links))),
+                       'depth_level': str(response.meta['depth']),
+                       'referring_url': str(response.request.headers.get('Referer',None))}
+            content = json.dumps(content)
+            mongodb_interface.put(full_domain,content)
 
 
 

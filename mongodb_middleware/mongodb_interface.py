@@ -10,14 +10,20 @@ def get_db():
 
 
 def put(domain,content):
-    db = get_db()
-    db[domain].insert(json.loads(content))
-    return content
+    try:
+        db = get_db()
+        db[domain].insert(json.loads(content))
+        return content
+    except:
+        return None
 
 
 def get_collection(collection):
-    db = get_db()
-    return db[collection]
+    try:
+        db = get_db()
+        return db[collection]
+    except:
+        return None
 
 
 def update_document(collection, id_name, id, attribute_name, content):
@@ -29,8 +35,11 @@ def update_document(collection, id_name, id, attribute_name, content):
         return None
 
 def get_all_collections():
-    db = get_db()
-    return db.list_collection_names()
+    try:
+        db = get_db()
+        return db.list_collection_names()
+    except:
+        return None
 
 
 # It returns the html_raw_text of a given page
@@ -42,6 +51,21 @@ def get_html_page(collection, url):
     except:
         return None
 
+def get_referring_url(collection, url):
+    try:
+        db = get_db()
+        page = db[collection].find_one({"url_page":str(url)},{"referring_url":1})
+        return page['referring_url']
+    except:
+        return None
+
+def get_depth_level(collection, url):
+    try:
+        db = get_db()
+        page = db[collection].find_one({"url_page":str(url)},{"depth_level":1})
+        return page['depth_level']
+    except:
+        return None
 
 def get_random_html(collection):
     try:
@@ -50,3 +74,22 @@ def get_random_html(collection):
         return db[collection].find()[random.randrange(collection_size)]['html_raw_text']
     except:
         return None
+
+def drop_collection(collection):
+    if collection != None and collection!='':
+        try:
+            db = get_db()
+            db.drop_collection(collection)
+        except:
+            return None
+    return None
+
+
+
+
+'''
+collections = get_all_collections()
+for collection in collections:
+    drop_collection(collection)
+'''
+

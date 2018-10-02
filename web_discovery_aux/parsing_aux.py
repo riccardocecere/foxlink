@@ -97,22 +97,16 @@ def domain2page_id(id, url):
 
 
 #function to extract clean text from html pages
-def extract_clean_text_from_home_page(url):
-    if url == None or url == '':
-        return 'ERROR: empty url'
+def extract_clean_text_from_html_page(html_page):
+    if (html_page) == 'ERROR: empty url' or (html_page) == 'ERROR:to take the page':
+        return html_page
     try:
-        #Take html of the page
-        html = requests.get(str(url), timeout=5).text
-    except:
-        print 'error to take the page: '+str(url)
-        return 'ERROR:to take the page'
-    try:
-        if html == None or html == '':
+        if html_page == None or html_page == '':
             return 'ERROR: extraction html'
         #Remove all html tags
-        home_page_text = pattern.web.plaintext(html)
+        home_page_text = pattern.web.plaintext((html_page))
     except:
-        print 'error extracting plain text from page: '+str(url)
+        print 'error extracting plain text from page: '+(html_page)
         return 'ERROR: extracting plain text'
 
     if home_page_text == '' or home_page_text== None:
@@ -147,62 +141,27 @@ def extract_clean_text_from_home_page(url):
 
     return stemmed
 
-#function to extract clean text from html pages
-def extract_clean_text_from_page(url):
-    if url == None or url == '':
-        return 'ERROR: empty url'
-    try:
-        #Take html of the page
-        html = requests.get(str(url), timeout=5).text
-    except:
-        print 'error to take the page: '+str(url)
-        return 'ERROR:to take the page'
-    try:
-        if html == None or html == '':
-            return 'ERROR: extraction html'
-        #Remove all html tags
-        home_page_text = pattern.web.plaintext(html)
-    except:
-        print 'error extracting plain text from page: '+str(url)
-        return 'ERROR: extracting plain text'
 
-    if home_page_text == '' or home_page_text== None:
-        return 'ERROR: before tokenization'
-
-
-    try:
-        #home_page_text = re.sub("[^A-Za-z0-9' ']", "", home_page_text).lower()
-        print('ciao')
-    except:
-        return 'ERROR: removing special charachter'
-
-    try:
-        # Tokenization of the words
-        tokens = nltk.word_tokenize(home_page_text)
-
-        #Remove all the non words
-        words = tokens
-    except:
-        return 'ERROR: during tokenization'
-
-    try:
-        stop_words = set(nltk.corpus.stopwords.words('english'))
-        words = [w for w in words if not w in stop_words]
-    except:
-        return 'ERROR: during stopwords process'
-
-    try:
-        #Stemming
-        porter = nltk.stem.PorterStemmer()
-        stemmed = [porter.stem(word) for word in words]
-    except:
-        return 'ERROR: during stemming process'
-
-    return stemmed
 # Function to select if a warc is useful based on it's name that must be in the form crawl-data/CC-MAIN-2018-22/segments/1526794863689.50/warc/CC-MAIN-20180520205455-20180520225455-00609.warc.gz
 # it's important that has /warc/ inside the string
 def correct_warc_name(warcname):
     if warcname == '' or warcname == None:
         return False
     return re.match('crawl.*\/warc\/.*gz',warcname)
+
+def get_html_text(url):
+    if url == None or url == '':
+        return 'Error'
+    try:
+        return pattern.web.plaintext(requests.get(url,timeout=5).text)
+    except:
+        return 'Error'
+
+def get_clean_text_from_html(html):
+    if html == None or html == '':
+        return 'Error'
+    try:
+        return pattern.web.plaintext(html)
+    except:
+        return 'Error'
 

@@ -3,11 +3,15 @@ from web_discovery_aux import parsing_aux
 from pyspark.mllib.feature import HashingTF, IDF
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.classification import NaiveBayes
+from web_discovery_aux import web_discovery_searx
 import nltk
 
 
 # Input spark context, path to the training set, number of features for the vectors
 def create_naive_bayes_model(sc,training_path,number_of_features):
+    print '--------------------------------------------------'
+    print '----INIZIO ADDESTRAMENTO----------------------'
+    print '--------------------------------------------------'
     input = sc.textFile(training_path)
 
     try:
@@ -18,7 +22,7 @@ def create_naive_bayes_model(sc,training_path,number_of_features):
 
 
     training_set = input.map(lambda line: line.split('\t')) \
-    .map(lambda (site,label):(site,label,parsing_aux.extract_clean_text_from_home_page(site)))\
+    .map(lambda (site,label):(site,label,parsing_aux.extract_clean_text_from_html_page(web_discovery_searx.donwload_page_with_request(str(site)))))\
         .filter(lambda (site,label,words):isinstance(words, list))\
         .filter(lambda (site,label,words):len(words)>2)
 
@@ -78,14 +82,50 @@ def classify_with_naive_bayes(sc, model, idf, number_of_features, sites, save, p
 
     # Join predictions with domains
     result = domains.map(lambda ((domain,values),index): (index, (domain,values))).join(preds.map(lambda (pred, index): (index, pred)))
-    result = result.map(lambda(index, ((domain,values),prediction)):(domain,{'pages':values['pages'], 'prediction':prediction}))\
-            .filter(lambda (domain,values): (float(values['prediction']) in filters))
+    result = result.map(lambda(index, ((domain,values),prediction)):(domain,{'pages':values['pages'], 'prediction':prediction}))
+            #.filter(lambda (domain,values): (float(values['prediction']) in filters))
 
     if(save):
         if path_to_save_evaluation!=None and path_to_save_evaluation!='':
             result.saveAsTextFile(path_to_save_evaluation)
     return result
 
+
+def classify_labelled_url_in_cluster_with_naive_bayes(sc, model, idf, number_of_features, labelled_urls, save, path_to_save_evaluation, filters):
+    print '--------------------------------------------------'
+    print '----INIZIO PREDIZIONI----------------------'
+    print '--------------------------------------------------'
+
+    labelled_urls_print = labelled_urls.take(10)
+    print str(labelled_urls_print)
+
+    # Calculate Tf based on the tokens extracted from the pages
+    tf = HashingTF(numFeatures=number_of_features).transform(labelled_urls.map(lambda (domain, values): values))
+
+    #Calculate tfidf
+    tfidf = idf.transform(tf)
+
+    #Makes predictions
+    preds = model.predict(tfidf)
+
+    print str(preds.collect())
+
+    #Zip with index necessary for the join
+    preds = preds.zipWithIndex()
+
+    # I creates a new rdd for binding the correct domain and values to each prediction
+    domains = labelled_urls.map(lambda (domain,values): domain)
+    domains = domains.zipWithIndex()
+
+    # Join predictions with domains
+    result = domains.map(lambda (domain,index): (index, domain)).join(preds.map(lambda (pred, index): (index, pred)))
+    result = result.map(lambda(index, (domain,prediction)):(domain,prediction))
+            #.filter(lambda (domain,values): (float(values['prediction']) in filters))
+
+    if(save):
+        if path_to_save_evaluation!=None and path_to_save_evaluation!='':
+            result.saveAsTextFile(path_to_save_evaluation)
+    return result
 
 
 

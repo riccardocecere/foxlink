@@ -56,7 +56,8 @@ def label_cluster_on_referring(clusters):
 
 
 def calculate_referring_url_metrics(sc,clusters,save,path_to_save):
-    output = clusters.map(lambda (domain,cluster_list): (domain,generate_referring_lists(cluster_list))) \
+    output = clusters.filter(lambda (domain,cluster_list):len(cluster_list)>1)\
+        .map(lambda (domain,cluster_list): (domain,generate_referring_lists(cluster_list))) \
         .mapValues(calculate_referers).mapValues(label_cluster_on_referring)
 
 
