@@ -8,7 +8,7 @@ from pyspark.ml import Pipeline
 import classifier_utils
 
 
-def keywords_naive_bayes_classifier(sc, training_path, evaluation_rdd, prepare_training_input, output_train_path_parquet, output_eval_path_parquet, save, path_to_save, classification_type):
+def keywords_naive_bayes_classifier(sc, training_path, number_of_features, evaluation_rdd, prepare_training_input, output_train_path_parquet, output_eval_path_parquet, save, path_to_save, classification_type):
 
     sqlContext = SQLContext(sc)
 
@@ -25,7 +25,7 @@ def keywords_naive_bayes_classifier(sc, training_path, evaluation_rdd, prepare_t
 
     categoryIndexer = StringIndexer(inputCol="category", outputCol="label")
     tokenizer = Tokenizer(inputCol="text", outputCol="words")
-    hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=10000)
+    hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=number_of_features)
     nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
     categoryConverter = IndexToString(inputCol="label", outputCol="pred")
     pipeline = Pipeline(stages=[categoryIndexer, tokenizer, hashingTF, nb, categoryConverter])
