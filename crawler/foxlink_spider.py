@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
-import crawler_html_parser, json
+import crawler_utils, json
 from mongodb_middleware import mongodb_interface
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from web_discovery_aux import parsing_aux
+from web_discovery import parser
 from bs4 import BeautifulSoup
-from collections import defaultdict
 
 
+# Definition of foxlink spider
 class ProductFinderSpider(CrawlSpider):
 
-    name = 'spider'
+    name = 'foxlink_spider'
 
     rules = (
         Rule(LinkExtractor(), callback='parse_item', follow=True),
@@ -20,13 +20,13 @@ class ProductFinderSpider(CrawlSpider):
 
 
     def parse_item(self, response):
-        #item_name = response.url.split("/")[-2] + '.html'
-        domain = parsing_aux.find_domain_url(response.url)
+        domain = parser.extract_domain_from_url(response.url)
         if domain in self.start_urls:
-            full_domain = parsing_aux.add_www_domain(domain)
-            relevant_links = crawler_html_parser.extract_relevant_links(response.body, parsing_aux.remove_www_domain(domain),full_domain)
+            full_domain = parser.add_www_domain(domain)
+            body = BeautifulSoup(response.body,'html.parser').body
+            relevant_links = crawler_utils.extract_relevant_links(body, parser.remove_www_domain(domain), full_domain)
             content = {'url_page': str(response.url),
-                       'html_raw_text': str(BeautifulSoup(response.body,'html.parser').body),
+                       'html_raw_text': str(body),
                        'page_relevant_links': str(list(set(relevant_links))),
                        'depth_level': str(response.meta['depth']),
                        'referring_url': str(response.request.headers.get('Referer',None))}
@@ -39,10 +39,11 @@ class ProductFinderSpider(CrawlSpider):
 def start_crawling(start_urls, allowed_domains,depth_limit,download_delay, closespider_pagecount, autothrottle_enable, autothrottle_target_concurrency):
 
     print '------------------------------------'
-    print '--------------URLS---------------'
+    print '--------------URLS------------------'
     print start_urls
     print allowed_domains
-    #Check if the donwload delay is at a minimum of 0.4 sec
+
+    #Check if the donwload delay is at a minimum of 0.3 sec
     if download_delay == None or download_delay<0.3:
         download_delay = 0.3
 
@@ -65,9 +66,8 @@ def start_crawling(start_urls, allowed_domains,depth_limit,download_delay, close
         'SCHEDULER': 'domain_scheduler.DomainScheduler',
         'USER_AGENT': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0'
     })
+
     process = CrawlerProcess(custom_settings)
-    process.crawl(ProductFinderSpider, start_urls=start_urls,allowed_domains=allowed_domains)
+    process.crawl(ProductFinderSpider, start_urls=start_urls, allowed_domains=allowed_domains)
     process.start()
-    return 'crawled'
-
-
+    return None

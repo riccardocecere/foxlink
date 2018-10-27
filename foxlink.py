@@ -1,8 +1,8 @@
 from pyspark import SparkContext, SparkConf
-from web_discovery_aux import web_discovery_searx
+from web_discovery import web_discovery_searx
 from clustering import product_finder_structural_clustering,product_finder_shingler
 from mongodb_middleware import mongodb_interface
-from crawler import crawler_product_finder
+from crawler import foxlink_crawler
 from metrics import referring_url_metrics
 from classifier import naive_bayes_classifier
 from xpath_analysis import xpath_patterns
@@ -28,7 +28,7 @@ sc.stop()
 
 
 #intrasite crawler
-product_sites_crawled = crawler_product_finder.intrasite_crawling_iterative(product_sites,config['crawler']['depth_limit'],config['crawler']['download_delay'],config['crawler']['closespider_pagecount'],config['crawler']['autothrottle_enable'],config['crawler']['autothrottle_target_concurrency'],config['crawler']['save_product_site_crawled_output'],config['crawler']['path_to_save_crawler_output'])
+product_sites_crawled = foxlink_crawler.intrasite_crawling_iterative(product_sites, config['crawler']['depth_limit'], config['crawler']['download_delay'], config['crawler']['closespider_pagecount'], config['crawler']['autothrottle_enable'], config['crawler']['autothrottle_target_concurrency'], config['crawler']['save_product_site_crawled_output'], config['crawler']['path_to_save_crawler_output'])
 
 
 conf = SparkConf().setAppName('foxlink')

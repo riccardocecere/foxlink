@@ -2,10 +2,10 @@
 import shingle_helper
 from mongodb_middleware import mongodb_interface
 from bs4 import BeautifulSoup
-from web_discovery_aux import parsing_aux
+from web_discovery import parser
 
 def calculate_shingles_on_domain(domain,window):
-    collection_name = parsing_aux.add_www_domain(str(domain))
+    collection_name = parser.add_www_domain(str(domain))
     collection = mongodb_interface.get_collection(str(collection_name))
     print '-------------------'+str(collection) + ' --------'
 
