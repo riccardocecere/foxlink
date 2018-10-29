@@ -1,8 +1,7 @@
 import operator
 import ast
-from mongodb_middleware import mongodb_interface
 
-
+# Function to generate structural clusterin on the given domain
 def structural_clustering(collection, threshold=20):
 
     # initialize empty hash table H
@@ -41,6 +40,7 @@ def structural_clustering(collection, threshold=20):
 
         if shingle_vector == '[]' or shingle_vector == None:
             continue
+
         # update inverted index v -> pages for third pass
         if shingle_vector in inverted_index:
             inverted_index[shingle_vector].append((url,depth_level,referring_url))
@@ -51,14 +51,13 @@ def structural_clustering(collection, threshold=20):
         # if already processed
         if shingle_vector in eight_eight_vectors_counts:
             eight_eight_vectors_counts[shingle_vector] += 1
-            # no need for computing covering 6/8, 7/8 vectors again
-            # just increment counts in hash table H
+            # no need for computing covering 6/8, 7/8 vectors again, just increment counts in hash table H
             increment_counts(covering_vectors[shingle_vector], hash_table)
+
+        # never seen this vector, init 8/8 count to 1
         else:
-            # never seen this vector, init 8/8 count to 1
             eight_eight_vectors_counts[shingle_vector] = 1
-            # 6/8 and 7/8 vectors need to be computed
-            # increment counts while computing them (only one pass)
+            # 6/8 and 7/8 vectors need to be computed, increment counts while computing them (only one pass)
             covering_vectors[shingle_vector] = compute_covering_vectors_and_increment_counts(shingle_vector, hash_table)
 
     #   *SECOND PASS*
@@ -72,7 +71,6 @@ def structural_clustering(collection, threshold=20):
     hash_table = delete_by_threshold(hash_table, threshold)
 
     not_clustered = 0
-    old_sample_size = len(sample)
 
     #   *THIRD PASS*
     # for each page p with shingle vector v
@@ -91,18 +89,11 @@ def structural_clustering(collection, threshold=20):
                     not_clustered += 1
                     del sample[u[0]]
 
-    #print("Vertex clusters: " + str(len(clusters)) + ' clusters.')
-
-    #print("Not classified: " + str(not_clustered)) + ' urls.'
-
-    #print('Classified %.3f' % (100 - ((not_clustered * 100)/old_sample_size))) + '%.'
-
     # build algorithm result with a short iteration
     result = []
     for shingle_vector, cluster in clusters.items():
         result.append((to_vec(shingle_vector), cluster))
 
-    #result = sorted(result, key=lambda x: len(x[1]), reverse=True)
     return result
 
 
@@ -176,7 +167,7 @@ def decrement_all_but_v_prime_by_v_count(covering_vectors, v_prime, count, hash_
 # Function that considers only clusters composed by a number of elements greater than a threshold
 def delete_by_threshold(hash_table, threshold):
     hash_table = {k: v for k, v in hash_table.items() if v >= threshold}
-    return hash_table
+    return hash_table    #result = sorted(result, key=lambda x: len(x[1]), reverse=True)
 
 
 # Function that transform a tuple in a vector

@@ -1,6 +1,6 @@
 from bs4 import Comment
 
-
+# Verify if an element is not under an invisible tag or a comment
 def tag_visible(element):
     if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
         return False
@@ -8,7 +8,7 @@ def tag_visible(element):
         return False
     return True
 
-
+# Extract all text of visible tags
 def extract_text(page):
     texts = page.findAll(text=True)
     visible_texts = filter(tag_visible, texts)

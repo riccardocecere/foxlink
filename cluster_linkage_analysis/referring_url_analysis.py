@@ -1,3 +1,17 @@
+from general_utils import rdd_utils
+
+# Function that counts number of referring urls in same cluster or from other clusters
+def calculate_all_cluster_labels(clusters, save, path_to_save):
+
+    output = clusters.filter(lambda (domain, cluster_list): len(list(cluster_list)) > 0) \
+        .map(lambda (domain, cluster_list): (domain, generate_referring_lists(cluster_list))) \
+        .mapValues(calculate_referers).mapValues(label_cluster_on_referring)
+
+    rdd_utils.save_rdd(output,save,path_to_save)
+
+    return output
+
+# Function to generate the list of all referring urls of cluster elements
 def generate_referring_lists(clusters):
     result = []
     for cluster in clusters:
@@ -16,7 +30,7 @@ def generate_referring_lists(clusters):
 
     return result
 
-
+# Function that counts the referring urls in the same cluster or from others
 def calculate_referers(clusters):
     result = []
     for current_cluster_referer in clusters:
@@ -39,7 +53,9 @@ def calculate_referers(clusters):
         result.append(cluster_referer)
     return result
 
+# Function that assign a label to clusters of the same domain, based on linkage analysis
 def label_cluster_on_referring(clusters):
+
     result = []
 
     for current_cluster in clusters:
@@ -52,17 +68,3 @@ def label_cluster_on_referring(clusters):
         result.append(cluster)
 
     return result
-
-
-
-def calculate_referring_url_metrics(sc,clusters,save,path_to_save):
-    output = clusters.filter(lambda (domain,cluster_list):len(cluster_list)>1)\
-        .map(lambda (domain,cluster_list): (domain,generate_referring_lists(cluster_list))) \
-        .mapValues(calculate_referers).mapValues(label_cluster_on_referring)
-
-
-    if save and path_to_save != '' and path_to_save != None:
-        output.saveAsTextFile(path_to_save)
-
-
-    return output

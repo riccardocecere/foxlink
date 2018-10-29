@@ -10,7 +10,7 @@
           "training_path": "hdfs:///user/maria_dev/data/training_set_cameras_home_pages.txt",
           "number_of_features_exponent": 18,
           "predictions_filters": [1.0],
-          "prepare_training_input": true,
+          "prepare_training_input": false,
           "output_train_path_parquet": "hdfs:///user/maria_dev/data/classifier/train_camera_sites.parquet",
           "output_eval_path_parquet": "hdfs:///user/maria_dev/data/classifier/eval_camera_sites.parquet",
           "path_to_save_classifier_output": "hdfs:///user/maria_dev/data/product_site_classified",
@@ -27,9 +27,7 @@
       "path_to_save_crawler_output": "hdfs:///user/maria_dev/data/product_sites_crawled"
   },
   "shingle": {
-      "shingle_window": 3,
-      "save_product_site_shingled_output": true,
-      "path_to_save_shingled_output": "hdfs:///user/maria_dev/data/product_sites_shingled"
+      "shingle_window": 3
   },
   "structural_clustering": {
       "threshold_number_element_in_cluster": 50,

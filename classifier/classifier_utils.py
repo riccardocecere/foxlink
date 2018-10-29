@@ -44,7 +44,7 @@ def prepare_input_for_cluster_page_classifier(sc, sqlContext, training_path, eva
 
     evaluation_rdd = evaluation_rdd.flatMap(lambda(domain,clusters):((domain,cluster) for cluster in clusters))\
                     .map(lambda (domain,cluster): (domain,(cluster['cluster_elements'],cluster['label'])))\
-                    .flatMap(lambda (domain,cluster): ((domain,(cluster_element[0], cluster_element[2], cluster[1], 1, parser.get_clean_text_from_html(mongodb_interface.get_html_page(domain, cluster_element[0])))) for cluster_element in cluster[0]))
+                    .flatMap(lambda (domain,cluster): ((domain,(cluster_element[0],cluster_element[2],cluster[1],1,parser.get_clean_text_from_html(mongodb_interface.get_html_page(domain,cluster_element[0])))) for cluster_element in cluster[0]))
     generate_parquet_for_cluster_pages(sqlContext, evaluation_rdd, output_eval_path_parquet)
     return None
 

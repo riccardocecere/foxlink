@@ -1,35 +1,13 @@
 # -*- coding: utf-8 -*-
 from mongodb_middleware import mongodb_interface
 from lxml import etree,html
-import re
-import itertools
+from web_discovery import parser
+import re, ast, itertools
 from general_utils import rdd_utils
-import ast
 
 
-def xpath_sequencies(sc, clusters_rdd, save_xpath, path_to_save_xpath):
-
-    '''
-
-    :param sc:
-    :param clusters_rdd:
-    :param save_xpath:
-    :param path_to_save_xpath:
-    :return:
-    .flatMap(lambda (domain,clusters):((domain,cluster) for cluster in clusters))\
-                    .flatMap(lambda(domain,cluster):((domain,(cluster_element,cluster['label'])) for cluster_element in cluster['cluster_elements']))\
-                    .filter(lambda (domain,values): values[1] == 'products')\
-                    .map(lambda (domain,values): (domain,values[0]))\
-                    .map(lambda (domain,cluster_element):(domain,(cluster_element[0],url_2_xpath(domain,cluster_element,[]))))\
-                    .filter(lambda (domain,xpath_list): xpath_list!=[] and xpath_list!=None)\
-                    .flatMap(lambda (domain,(url,xpath_list)):((str(xpath[:len(xpath)-1])+'/----/'+str(domain),url) for xpath in xpath_list))\
-                    .groupByKey()\
-                    .mapValues(set).mapValues(list)\
-                    .map(lambda (key,values): (key.split('/----/')[0],(key.split('/----/')[1],values)))
-
-
-                    {'url':row.url,'cluster_label':row.cluster_label,'referring_url':row.referring_url,'domain':row.domain})
-    '''
+# Function to calculate xpath sequencies
+def xpath_sequencies(clusters_rdd, save_xpath, path_to_save_xpath):
 
     clusters_rdd = clusters_rdd\
                     .map(lambda row: (row['domain'],(row['url'],row['cluster_label'],row['referring_url'])))\
@@ -47,8 +25,9 @@ def xpath_sequencies(sc, clusters_rdd, save_xpath, path_to_save_xpath):
     rdd_utils.save_rdd(clusters_rdd, save_xpath, path_to_save_xpath)
     return clusters_rdd
 
+# Function to calculate the sequence of xpaths from home page to the given url
 def url_2_xpath(domain,cluster_element,xpath_list,number_of_recursions=9):
-    if number_of_recursions==1 or (domain == cluster_element[0] and domain == cluster_element[2]):
+    if number_of_recursions==1 or (domain == cluster_element[0] and domain == cluster_element[2]) or ( 'http://'+parser.remove_www_domain(domain)== cluster_element[0] and 'http://'+parser.remove_www_domain(domain) == cluster_element[2])or ( 'https://'+parser.remove_www_domain(domain)== cluster_element[0] and 'https://'+parser.remove_www_domain(domain) == cluster_element[2]):
         result = []
         for element in itertools.product(*xpath_list):
             l = list(element)
@@ -71,23 +50,41 @@ def url_2_xpath(domain,cluster_element,xpath_list,number_of_recursions=9):
     final_result_list = url_2_xpath(domain,parent_cluster_element,xpath_list,number_of_recursions-1)
     return final_result_list
 
-def max_generalization(generalized_xpath):
+
+# Generalize all the xpath expressions
+def generalize_xpath(sc, xpath_rdd, save_xpath, path_to_save_xpath):
+    output = xpath_rdd.filter(lambda (key, values): values != None and values != []) \
+        .flatMap(lambda ((domain, label), values): (((domain, label), value) for value in values)) \
+        .filter(lambda ((domain, label), value): value != None and value != [] and len(value) > 1 and value != {}) \
+        .map(lambda ((domain, label), value): slice_xpath_sequence_to_last_step(domain, label, value)) \
+        .filter(lambda ((domain, label), value): value != None and value != [] and value != '' and value != {}) \
+        .map(lambda ((domain, label), (xpath_list, last_xpath, url, reffering_url)): ((str(domain) + '/----/' + str(label) + '/----/' + str(xpath_list)), (last_xpath, url, reffering_url))) \
+        .groupByKey() \
+        .map(lambda (key, value): ((key.split('/----/')[0], key.split('/----/')[1], key.split('/----/')[2]), list(value))) \
+        .mapValues(xpath_index_generalization) \
+        .filter(lambda ((domain, label, xpath), (generalized_xpath, xpaths, url2ref)): len(generalized_xpath) > 0) \
+        .map(lambda ((domain, label, xpath), (generalized_xpath, xpaths, url2ref)): ((domain, label, xpath), (generalized_xpath, len(xpaths), xpaths, url2ref)))
+
+    rdd_utils.save_rdd(output, save_xpath, path_to_save_xpath)
+
+# Generalize the entire xpath expression
+def xpath_max_generalization(generalized_xpath):
     path_dict = {}
     output = []
 
     for path in generalized_xpath:
-        current_path = re.sub('\[[0-9]*\]|\[[\*]*\]','',path)
+        current_path = re.sub('\[[0-9]*\]|\[[\*]*\]', '', path)
         if current_path in path_dict:
             path_dict[current_path].append(path)
         else:
             path_dict[current_path] = [path]
-    print path_dict
     for path in path_dict:
-        max_count = max(path_dict[path],key=lambda x:x.count('*'))
+        max_count = max(path_dict[path], key=lambda x: x.count('*'))
         output.append(max_count)
     return output
 
-def xpath_generalization(xpath_list):
+# Generalize a specific index in the xpath expression
+def xpath_index_generalization(xpath_list):
     xpaths = []
     url2ref = []
     generalized_xpath = []
@@ -97,36 +94,29 @@ def xpath_generalization(xpath_list):
     for xpath in xpaths:
         for xpath2 in xpaths:
             if xpath != xpath2 and len(xpath) == len(xpath2):
-                print 'sono nell se'
                 xpath_tags_1 = xpath.split('/')[1:]
                 xpath_tags_2 = xpath2.split('/')[1:]
                 n = len(xpath_tags_1)
                 change_indexes = []
                 for index in range(0, n):
-                    if xpath_tags_1[index] != xpath_tags_2[index]:
-                        print 'sono nell secondo se'
-                        change_indexes.append(index)
-                print str(change_indexes)
+                    try:
+                        if xpath_tags_1[index] != xpath_tags_2[index]:
+                            change_indexes.append(index)
+                    except:
+                        continue
                 for index in change_indexes:
-                    print str(len(xpath_tags_1))
                     xpath_tags_1[index] = re.sub('\[.*\]', '[*]', xpath_tags_1[index])
                     generalized_xpath.append('/' + '/'.join(xpath_tags_1))
 
     generalized_xpath = list(set(generalized_xpath))
-    generalized_xpath = list(set(max_generalization(generalized_xpath)))
+    generalized_xpath = list(set(xpath_max_generalization(generalized_xpath)))
     return (generalized_xpath, xpaths, url2ref)
 
-
-
-
-
-def generalize_xpath(sc, xpath_rdd, save_xpath, path_to_save_xpath):
-    output = xpath_rdd.filter(lambda (key,values):values != None and values != [])\
-            .flatMap(lambda ((domain,label),values):(((domain,label),value) for value in values))\
-            .map(lambda ((domain,label),value):((domain,label),(value[0][:len(value[0])-1],value[0][-1],value[1],value[2])))\
-            .map(lambda ((domain,label),(xpath_list,last_xpath,url,reffering_url)):((str(domain)+'/----/'+str(label)+'/----/'+str(xpath_list)),(last_xpath,url,reffering_url)))\
-            .groupByKey()\
-            .map(lambda (key,value):((key.split('/----/')[0],key.split('/----/')[1],key.split('/----/')[2]),list(value)))\
-            .mapValues(xpath_generalization)
-
-    rdd_utils.save_rdd(output, save_xpath, path_to_save_xpath)
+# It returns the xpaths in this form ([xpath1,xpath2,...,xpathN-1],xpathN,url,referring_url)
+def slice_xpath_sequence_to_last_step(domain, label, value):
+    try:
+        output = (value[0][:len(value[0]) - 1], value[0][-1], value[1], value[2])
+        return ((domain,label),output)
+    except:
+        print value
+        return ((domain,label),None)

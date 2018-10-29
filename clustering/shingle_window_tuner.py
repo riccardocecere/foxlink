@@ -1,4 +1,4 @@
-import shingle_helper
+import shingler
 from scipy.spatial import distance
 from operator import itemgetter
 from mongodb_middleware import mongodb_interface
@@ -13,7 +13,7 @@ def tune_shingle_window(pages):
     for window in range(3,11):
 
         try:
-            shingle_vectors = [shingle_helper.compute_shingle_vector(page,window) for page in pages]
+            shingle_vectors = [shingler.compute_shingle_vector(page, window) for page in pages]
 
         except:
             print "errore"

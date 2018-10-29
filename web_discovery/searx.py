@@ -1,4 +1,4 @@
-import requests
+import requests,middleware_config
 
 # Function that takes an id and makes a request to the meta-search engine to find pages related to that id.
 # Pageno is the number of result pages of searx to return.
@@ -9,8 +9,8 @@ def searx_request(id,pageno):
 
     try:
         pageno += 1
-        response = requests.get('http://172.17.0.4:8888/?format=json&pageno='+str(pageno)+'&engines=yahoo,bing,duckduckgo,qwant,faroo,swisscows&q='+str(id))
-        #response = requests.get('http://172.17.0.4:8888/?format=json&pageno=' + str(pageno) + '&q=' + str(id))
+        response = requests.get(str(middleware_config.searx_address)+'/?format=json&pageno='+str(pageno)+'&engines=yahoo,bing,duckduckgo,qwant,faroo,swisscows&q='+str(id))
+        #response = requests.get(str(middleware_config.searx_address)+'/?format=json&pageno=' + str(pageno) + '&q=' + str(id))
         response = response.json()
         return response
 

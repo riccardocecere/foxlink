@@ -1,14 +1,13 @@
-import json,random
-import pymongo
+import json,random,middleware_config
+from pymongo import MongoClient
 
-
+# Function to access the given db
 def get_db():
-    from pymongo import MongoClient
-    client = MongoClient('172.17.0.3:27017')
+    client = MongoClient(middleware_config.mongodb_address)
     db = client.ProductFinderCrawlerData
     return db
 
-
+# Insert a document
 def put(domain,content):
     try:
         db = get_db()
@@ -17,7 +16,7 @@ def put(domain,content):
     except:
         return None
 
-
+# Take all the documents of a collection
 def get_collection(collection):
     try:
         db = get_db()
@@ -25,7 +24,7 @@ def get_collection(collection):
     except:
         return None
 
-
+# Update a document
 def update_document(collection, id_name, id, attribute_name, content):
     try:
         db = get_db()
@@ -34,6 +33,7 @@ def update_document(collection, id_name, id, attribute_name, content):
     except:
         return None
 
+# Get all collections in the db
 def get_all_collections():
     try:
         db = get_db()
@@ -51,6 +51,7 @@ def get_html_page(collection, url):
     except:
         return None
 
+# Get all the referring url of a given page
 def get_referring_url(collection, url):
     try:
         db = get_db()
@@ -59,6 +60,7 @@ def get_referring_url(collection, url):
     except:
         return None
 
+# Get depth level of a given page
 def get_depth_level(collection, url):
     try:
         db = get_db()
@@ -67,6 +69,7 @@ def get_depth_level(collection, url):
     except:
         return None
 
+#Function to  take an html text at random
 def get_random_html(collection):
     try:
         db = get_db()
@@ -75,6 +78,7 @@ def get_random_html(collection):
     except:
         return None
 
+# Drop the given collection
 def drop_collection(collection):
     if collection != None and collection!='':
         try:
@@ -84,14 +88,9 @@ def drop_collection(collection):
             return None
     return None
 
-
-
-
 '''
-
+# Nuke operation use carefully, drop all the collections in the db
 collections = get_all_collections()
 for collection in collections:
     drop_collection(collection)
 '''
-
-

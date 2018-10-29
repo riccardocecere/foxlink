@@ -30,9 +30,7 @@ def insert_home_pages(collections):
                 content = {
                     'url_page': collection,
                     'html_raw_text': str(BeautifulSoup(response, 'html.parser').body),
-                    'page_relevant_links': str(list(set(
-                        crawler_utils.extract_relevant_links(response, parser.remove_www_domain(collection),
-                                                             parser.add_www_domain(collection))))),
+                    'page_relevant_links': str(list(set(crawler_utils.extract_relevant_links(response, parser.remove_www_domain(collection),parser.add_www_domain(collection))))),
                     'depth_level': '1',
                     'referring_url': collection
                 }
@@ -40,7 +38,7 @@ def insert_home_pages(collections):
                 mongodb_interface.put(collection, content)
 
             except:
-                print 'error'
+                print 'error inserting home pages after crawling'
                 continue
 
     return None

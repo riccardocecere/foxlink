@@ -36,7 +36,7 @@ def keywords_naive_bayes_classifier(sc, training_path, number_of_features, evalu
 
     output = pr.rdd
 
-    if classification_type == 'home_pages' or classification_type == 'cluster_pages':
+    if classification_type == 'home_pages':
         output = output.filter(lambda row: row.prediction == 1.0)
     if classification_type == 'cluster_pages':
         output = output.map(lambda row: {'url':row.url,'cluster_label':row.cluster_label,'referring_url':row.referring_url,'domain':row.domain})
