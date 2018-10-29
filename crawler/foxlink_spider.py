@@ -5,7 +5,7 @@ import crawler_utils, json
 from mongodb_middleware import mongodb_interface
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from web_discovery import parser
+from general_utils import text_parser
 from bs4 import BeautifulSoup
 
 
@@ -20,11 +20,11 @@ class ProductFinderSpider(CrawlSpider):
 
 
     def parse_item(self, response):
-        domain = parser.extract_domain_from_url(response.url)
+        domain = text_parser.extract_domain_from_url(response.url)
         if domain in self.start_urls:
-            full_domain = parser.add_www_domain(domain)
+            full_domain = text_parser.add_www_domain(domain)
             body = BeautifulSoup(response.body,'html.parser').body
-            relevant_links = crawler_utils.extract_relevant_links(body, parser.remove_www_domain(domain), full_domain)
+            relevant_links = crawler_utils.extract_relevant_links(body, text_parser.remove_www_domain(domain), full_domain)
             content = {'url_page': str(response.url),
                        'html_raw_text': str(body),
                        'page_relevant_links': str(list(set(relevant_links))),

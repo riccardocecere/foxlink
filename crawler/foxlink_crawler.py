@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-from web_discovery import parser
+from general_utils import text_parser
 from mongodb_middleware import mongodb_interface
 from bs4 import BeautifulSoup
 import crawler_utils,json,requests,foxlink_spider
 
 
 #Fucntion to start and perform intrasite crawling outside a spark context
-def intrasite_crawling_iterative(product_sites,depth_limit,download_delay,closesspider_pagecount,autothrottle_enable,autothrottle_target_concurrency,save_rdd,output_path):
+def intrasite_crawling_iterative(product_sites,depth_limit,download_delay,closesspider_pagecount,autothrottle_enable,autothrottle_target_concurrency):
 
     allowed_domains = []
     for site in product_sites:
-        allowed_domain = str(parser.remove_www_domain(site))
+        allowed_domain = str(text_parser.remove_www_domain(site))
         allowed_domains.append(allowed_domain)
 
     foxlink_spider.start_crawling(product_sites, allowed_domains, depth_limit, download_delay, closesspider_pagecount, autothrottle_enable, autothrottle_target_concurrency)
@@ -30,7 +30,8 @@ def insert_home_pages(collections):
                 content = {
                     'url_page': collection,
                     'html_raw_text': str(BeautifulSoup(response, 'html.parser').body),
-                    'page_relevant_links': str(list(set(crawler_utils.extract_relevant_links(response, parser.remove_www_domain(collection),parser.add_www_domain(collection))))),
+                    'page_relevant_links': str(list(set(crawler_utils.extract_relevant_links(response, text_parser.remove_www_domain(collection),
+                                                                                             text_parser.add_www_domain(collection))))),
                     'depth_level': '1',
                     'referring_url': collection
                 }

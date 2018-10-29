@@ -1,5 +1,6 @@
-import hash_functions_applier, visible_html_text_extractor
+import hash_functions_applier
 import numpy as np
+from general_utils import text_parser
 from itertools import islice
 
 
@@ -32,7 +33,7 @@ def compute_shingles_set(html, shingle_window_size):
     tags = []
     # descendants performs a depth first visit of the DOM
     for child in html.descendants:
-        if child.name is not None and child.name and visible_html_text_extractor.tag_visible(child) and child.name not in ['script', 'link', 'meta'] and not hidden(child):
+        if child.name is not None and child.name and text_parser.tag_visible(child) and child.name not in ['script', 'link', 'meta'] and not hidden(child):
             tags.append(child.name)
     return window(tags, shingle_window_size)
 

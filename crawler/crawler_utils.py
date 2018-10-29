@@ -1,7 +1,7 @@
-from bs4 import BeautifulSoup
 from urlparse import urldefrag
 import re
-from web_discovery import parser
+from general_utils import text_parser
+
 
 # Function that takes the body of an html page and the domain
 # It returns all the relevant links on the page
@@ -15,9 +15,9 @@ def extract_relevant_links(html_body, domain, full_domain):
     all_links = [url['href'] for url in html_body.find_all("a") if 'href' in url.attrs]
 
     # Take only the links 'inside' the site
-    in_site_links = [link for link in all_links if link and (parser.in_site_links(domain, link))]
+    in_site_links = [link for link in all_links if link and (text_parser.in_site_links(domain, link))]
 
-    in_site_links = [parser.normalize_link(link, full_domain) for link in in_site_links]
+    in_site_links = [text_parser.normalize_link(link, full_domain) for link in in_site_links]
 
     # Heuristically remove whishlist / cart links
     defrag_links = [urldefrag(link)[0] for link in in_site_links]

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pattern.web,requests,re
-
+from bs4 import Comment
 
 #Function to verify if a domain is present in the given url
 def find_domain_in_url(domain,url):
@@ -117,4 +117,18 @@ def get_clean_text_from_html(html):
         return pattern.web.plaintext(html)
     except:
         return 'Error'
+
+# Verify if an element is not under an invisible tag or a comment
+def tag_visible(element):
+    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
+        return False
+    if isinstance(element, Comment):
+        return False
+    return True
+
+# Extract all text of visible tags
+def extract_text(page):
+    texts = page.findAll(text=True)
+    visible_texts = filter(tag_visible, texts)
+    return " ".join(t.strip() for t in visible_texts)
 

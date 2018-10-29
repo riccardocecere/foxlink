@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from pyspark.sql import Row
-from web_discovery import parser
+from general_utils import text_parser
 from mongodb_middleware import mongodb_interface
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 
@@ -29,7 +29,7 @@ def prepare_input_for_home_page_classifier(sc, sqlContext, training_path, evalua
 
 # Function to save dataframe in parquet format
 def generate_parquet(sqlContext, rdd_data, ouput_path):
-    rdd_data = rdd_data.map(lambda p: Row(domain=p[0], category=p[1], text=parser.get_html_text(str(p[0]))))\
+    rdd_data = rdd_data.map(lambda p: Row(domain=p[0], category=p[1], text=text_parser.get_html_text(str(p[0]))))\
             .filter(lambda row: row.text != 'Error')
     schema = sqlContext.createDataFrame(rdd_data)
     schema.write.save(ouput_path, format="parquet")
@@ -44,7 +44,8 @@ def prepare_input_for_cluster_page_classifier(sc, sqlContext, training_path, eva
 
     evaluation_rdd = evaluation_rdd.flatMap(lambda(domain,clusters):((domain,cluster) for cluster in clusters))\
                     .map(lambda (domain,cluster): (domain,(cluster['cluster_elements'],cluster['label'])))\
-                    .flatMap(lambda (domain,cluster): ((domain,(cluster_element[0],cluster_element[2],cluster[1],1,parser.get_clean_text_from_html(mongodb_interface.get_html_page(domain,cluster_element[0])))) for cluster_element in cluster[0]))
+                    .flatMap(lambda (domain,cluster): ((domain,(cluster_element[0], cluster_element[2], cluster[1], 1,
+                                                                text_parser.get_clean_text_from_html(mongodb_interface.get_html_page(domain, cluster_element[0])))) for cluster_element in cluster[0]))
     generate_parquet_for_cluster_pages(sqlContext, evaluation_rdd, output_eval_path_parquet)
     return None
 

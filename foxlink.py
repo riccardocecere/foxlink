@@ -18,17 +18,17 @@ conf = SparkConf().setAppName('foxlink')
 sc = SparkContext(conf=conf)
 
 #web discovery with searx
-#sites = web_discovery_searx.web_discovery_with_searx(config['web_discovery']['id_seed_path'], sc, config['web_discovery']['searx']['num_of_searx_result_pages'], config['web_discovery']['searx']['save_web_discovery_output'], config['web_discovery']['searx']['path_to_save_web_discovery_output'])
+sites = web_discovery_searx.web_discovery_with_searx(config['web_discovery']['id_seed_path'], sc, config['web_discovery']['searx']['num_of_searx_result_pages'], config['web_discovery']['searx']['save_web_discovery_output'], config['web_discovery']['searx']['path_to_save_web_discovery_output'])
 
 #training and evaluation product sites
-#product_sites = naive_bayes_classifier.keywords_naive_bayes_classifier(sc, config['web_discovery']['product_sites_classifier']['training_path'], int(math.pow(2,int(config['web_discovery']['product_sites_classifier']['number_of_features_exponent']))), sites, config['web_discovery']['product_sites_classifier']['prepare_training_input'], config['web_discovery']['product_sites_classifier']['output_train_path_parquet'], config['web_discovery']['product_sites_classifier']['output_eval_path_parquet'], config['web_discovery']['product_sites_classifier']['save_classifier_output'], config['web_discovery']['product_sites_classifier']['path_to_save_classifier_output'],'home_pages')
-#product_sites = product_sites.map(lambda row: row.domain).take(20)
+product_sites = naive_bayes_classifier.keywords_naive_bayes_classifier(sc, config['web_discovery']['product_sites_classifier']['training_path'], int(math.pow(2,int(config['web_discovery']['product_sites_classifier']['number_of_features_exponent']))), sites, config['web_discovery']['product_sites_classifier']['prepare_training_input'], config['web_discovery']['product_sites_classifier']['output_train_path_parquet'], config['web_discovery']['product_sites_classifier']['output_eval_path_parquet'], config['web_discovery']['product_sites_classifier']['save_classifier_output'], config['web_discovery']['product_sites_classifier']['path_to_save_classifier_output'],'home_pages')
+product_sites = product_sites.map(lambda row: row.domain).take(20)
 
 sc.stop()
 
 
 #intrasite crawler
-#product_sites_crawled = foxlink_crawler.intrasite_crawling_iterative(product_sites, config['crawler']['depth_limit'], config['crawler']['download_delay'], config['crawler']['closespider_pagecount'], config['crawler']['autothrottle_enable'], config['crawler']['autothrottle_target_concurrency'], config['crawler']['save_product_site_crawled_output'], config['crawler']['path_to_save_crawler_output'])
+product_sites_crawled = foxlink_crawler.intrasite_crawling_iterative(product_sites, config['crawler']['depth_limit'], config['crawler']['download_delay'], config['crawler']['closespider_pagecount'], config['crawler']['autothrottle_enable'], config['crawler']['autothrottle_target_concurrency'])
 
 
 conf = SparkConf().setAppName('foxlink')
@@ -45,7 +45,7 @@ clusters = foxlink_structural_clustering.all_sites_structural_clustering(sc.para
 referring_url_metrics = referring_url_analysis.calculate_all_cluster_labels(clusters, config['linkage_analysis']['save_referring_url_metrics_output'], config['linkage_analysis']['path_to_save_referring_url_metrics'])
 
 #cluster pages classifier
-category_clusters = naive_bayes_classifier.keywords_naive_bayes_classifier(sc,config['cluster_pages_classifier']['training_path_cluster_classifier'], int(math.pow(2,int(config['cluster_pages_classifier']['number_of_features_exponent']))),referring_url_metrics,config['cluster_pages_classifier']['prepare_training_input_cluster_page'],config['cluster_pages_classifier']['ouput_train_cluster_page_path_parquet'],config['cluster_pages_classifier']['output_eval_cluster_page_path_parquet'],config['cluster_pages_classifier']['save_cluster_page_evaluation'],config['cluster_pages_classifier']['path_to_save_cluster_page'],'cluster_pages')
+category_clusters = naive_bayes_classifier.keywords_naive_bayes_classifier(sc,config['cluster_pages_classifier']['training_path_cluster_classifier'], int(math.pow(2,int(config['cluster_pages_classifier']['number_of_features_exponent']))),referring_url_metrics,config['cluster_pages_classifier']['prepare_training_input_cluster_page'],config['cluster_pages_classifier']['ouput_train_cluster_page_path_parquet'],config['cluster_pages_classifier']['output_eval_cluster_page_path_parquet'],config['cluster_pages_classifier']['save_cluster_page_evaluation'],config['cluster_pages_classifier']['path_to_save_cluster_pages'],'cluster_pages')
 
 #xpath generalization
 xpaths = xpath_patterns.xpath_sequencies(category_clusters,config['xpath_generalization']['save_xpath'],config['xpath_generalization']['path_to_save_xpath'])

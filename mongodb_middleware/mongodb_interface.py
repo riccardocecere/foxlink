@@ -93,4 +93,5 @@ def drop_collection(collection):
 collections = get_all_collections()
 for collection in collections:
     drop_collection(collection)
+
 '''

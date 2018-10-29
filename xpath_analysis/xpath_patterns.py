@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from mongodb_middleware import mongodb_interface
 from lxml import etree,html
-from web_discovery import parser
 import re, ast, itertools
-from general_utils import rdd_utils
+from general_utils import rdd_utils, text_parser
 
 
 # Function to calculate xpath sequencies
@@ -27,7 +26,7 @@ def xpath_sequencies(clusters_rdd, save_xpath, path_to_save_xpath):
 
 # Function to calculate the sequence of xpaths from home page to the given url
 def url_2_xpath(domain,cluster_element,xpath_list,number_of_recursions=9):
-    if number_of_recursions==1 or (domain == cluster_element[0] and domain == cluster_element[2]) or ( 'http://'+parser.remove_www_domain(domain)== cluster_element[0] and 'http://'+parser.remove_www_domain(domain) == cluster_element[2])or ( 'https://'+parser.remove_www_domain(domain)== cluster_element[0] and 'https://'+parser.remove_www_domain(domain) == cluster_element[2]):
+    if number_of_recursions==1 or (domain == cluster_element[0] and domain == cluster_element[2]) or ( 'http://' + text_parser.remove_www_domain(domain) == cluster_element[0] and 'http://' + text_parser.remove_www_domain(domain) == cluster_element[2])or ('https://' + text_parser.remove_www_domain(domain) == cluster_element[0] and 'https://' + text_parser.remove_www_domain(domain) == cluster_element[2]):
         result = []
         for element in itertools.product(*xpath_list):
             l = list(element)

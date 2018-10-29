@@ -2,12 +2,13 @@
 import shingler
 from mongodb_middleware import mongodb_interface
 from bs4 import BeautifulSoup
-from web_discovery import parser
+from general_utils import text_parser
+
 
 # Function that calculate shingle vectors for all pages of a given domain
 def calculate_shingles_on_domain(domain,window):
 
-    collection_name = parser.add_www_domain(str(domain))
+    collection_name = text_parser.add_www_domain(str(domain))
     collection = mongodb_interface.get_collection(str(collection_name))
 
     print '-----------------------------------------------------------'

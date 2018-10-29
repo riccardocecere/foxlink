@@ -1,30 +1,28 @@
 {
   "web_discovery": {
-      "id_seed_path": "hdfs:///user/maria_dev/data/test.txt",
+      "id_seed_path": "hdfs:///user/maria_dev/data/products_seed.txt",
       "searx": {
-          "num_of_searx_result_pages": 1,
-          "path_to_save_web_discovery_output": "hdfs:///user/maria_dev/data/searx_discovery",
+          "num_of_searx_result_pages": 5,
+          "path_to_save_web_discovery_output": "hdfs:///user/maria_dev/data/searx_output",
           "save_web_discovery_output": true
       },
       "product_sites_classifier": {
-          "training_path": "hdfs:///user/maria_dev/data/training_set_cameras_home_pages.txt",
+          "training_path": "hdfs:///user/maria_dev/data/training_set_home_pages.txt",
           "number_of_features_exponent": 18,
           "predictions_filters": [1.0],
           "prepare_training_input": false,
-          "output_train_path_parquet": "hdfs:///user/maria_dev/data/classifier/train_camera_sites.parquet",
-          "output_eval_path_parquet": "hdfs:///user/maria_dev/data/classifier/eval_camera_sites.parquet",
-          "path_to_save_classifier_output": "hdfs:///user/maria_dev/data/product_site_classified",
+          "output_train_path_parquet": "hdfs:///user/maria_dev/data/classifier/training_home_pages.parquet",
+          "output_eval_path_parquet": "hdfs:///user/maria_dev/data/classifier/evaluation_home_pages.parquet",
+          "path_to_save_classifier_output": "hdfs:///user/maria_dev/data/product_sites_classified",
           "save_classifier_output": true
       }
   },
   "crawler": {
       "depth_limit": 8,
       "download_delay": 0.3,
-      "closespider_pagecount": 3000,
+      "closespider_pagecount": 10000,
       "autothrottle_enable": true,
-      "autothrottle_target_concurrency": 10,
-      "save_product_site_crawled_output": true,
-      "path_to_save_crawler_output": "hdfs:///user/maria_dev/data/product_sites_crawled"
+      "autothrottle_target_concurrency": 10
   },
   "shingle": {
       "shingle_window": 3
@@ -32,24 +30,24 @@
   "structural_clustering": {
       "threshold_number_element_in_cluster": 50,
       "save_structural_clustering_output": true,
-      "path_to_save_structural_clustering_output": "hdfs:///user/maria_dev/data/structural_clustering"
+      "path_to_save_structural_clustering_output": "hdfs:///user/maria_dev/data/structural_clustering_output"
   },
   "linkage_analysis": {
-      "path_to_save_referring_url_metrics": "hdfs:///user/maria_dev/data/cluster_referring_url_output",
+      "path_to_save_referring_url_metrics": "hdfs:///user/maria_dev/data/cluster_linkage_analysis_output",
       "save_referring_url_metrics_output": true
   },
   "cluster_pages_classifier": {
-      "training_path_cluster_classifier": "hdfs:///user/maria_dev/data/training_set_cameras_cluster_pages.txt",
+      "training_path_cluster_classifier": "hdfs:///user/maria_dev/data/training_set_cluster_pages.txt",
       "number_of_features_exponent": 18,
       "prepare_training_input_cluster_page": false,
-      "ouput_train_cluster_page_path_parquet": "hdfs:///user/maria_dev/data/classifier/train_camera_cluster_page.parquet",
-      "output_eval_cluster_page_path_parquet": "hdfs:///user/maria_dev/data/classifier/eval_camera_cluster_page.parquet",
+      "ouput_train_cluster_page_path_parquet": "hdfs:///user/maria_dev/data/classifier/traininig_cluster_pages.parquet",
+      "output_eval_cluster_page_path_parquet": "hdfs:///user/maria_dev/data/classifier/evaluation_cluster_pages.parquet",
       "save_cluster_page_evaluation": true,
-      "path_to_save_cluster_page": "hdfs:///user/maria_dev/data/cluster_page_classified"
+      "path_to_save_cluster_pages": "hdfs:///user/maria_dev/data/cluster_page_classified"
   },
   "xpath_generalization": {
       "save_xpath": true,
-      "path_to_save_xpath": "hdfs:///user/maria_dev/data/xpath_output",
+      "path_to_save_xpath": "hdfs:///user/maria_dev/data/xpath_sequencies_output",
       "save_xpath_generalized": true,
       "path_to_save_xpath_generalized": "hdfs:///user/maria_dev/data/generalized_xpath_output"
   }
